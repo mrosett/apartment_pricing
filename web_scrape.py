@@ -8,37 +8,42 @@ import pandas as pd
 
 '''
 def clean_housing(housing_str):
-    return housing_str
-result = open("sf_apts.html","r").read()
-soup = BeautifulSoup(result)'''
+    TODO: Add method for parsing this
+    return housing_str'''
 
 next = 'https://sfbay.craigslist.org/search/sfc/apa'
 
 listings = []
 
 while next is not None:
-    print(next)
 
     result = requests.get(next)
     soup = BeautifulSoup(result.content)
     #result = open("sf_apts.html","r").read()
     #soup = BeautifulSoup(result)
-    next = soup.find('link', rel='next')['href']
+    if soup.find('link', rel='next') is not None:
+        next = soup.find('link', rel='next')['href']
+    else:
+        next = None
+    print(next)
 
     for listing in soup.find_all("p", "row"):
         list_dict = {}
         list_dict['data-pid'] = listing['data-pid']
         if listing.has_key('data-repost-of'):
             list_dict['data-repost-of'] = listing['data-repost-of']
-        list_dict['href'] = listing.find("a", "hdrlnk")['href']
-        list_dict['description'] = listing.find("a", "hdrlnk").get_text().strip()
+        if listing.find("a", "hdrlnk") is not None:
+            list_dict['href'] = listing.find("a", "hdrlnk")['href']
+        if listing.find("a", "hdrlnk") is not None:
+            list_dict['description'] = listing.find("a", "hdrlnk").get_text().strip()
         if listing.find("span", "price") is not None:
             list_dict['price'] = listing.find("span", "price").get_text().strip()
         if listing.find("span", "housing") is not None:
             list_dict['housing'] = listing.find("span", "housing").get_text().strip()
-        if listing.find("span", "pnr").find("small") is not None:
+        if listing.find("span", "pnr") is not None and listing.find("span", "pnr").find("small") is not None:
             list_dict['neighborhood'] = listing.find("span", "pnr").find("small").get_text().strip()
-        list_dict['time'] = listing.find("time")['datetime']
+        if listing.find("time") is not None:
+            list_dict['time'] = listing.find("time")['datetime']
         listings.append(list_dict)
 
     time.sleep(random.randint(5,10))
